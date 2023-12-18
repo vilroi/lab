@@ -7,6 +7,7 @@ multimap: multimap.c
 	$(CC) multimap.c -o multimap
 
 ptdump: true_flag
+	git submodule init && git submodule update
 	$(MAKE) -C $@
 
 clean:
