@@ -65,7 +65,7 @@ virt addr              physical addr            size          perms        prese
 
 ```
 
-As we progress the program by pressing enter in the terminal running ```singlemap```, the output of ```ptdump``` should change.
+As we progress by pressing enter in the terminal running ```singlemap```, the output of ```ptdump``` should change.
 
 In ```singlemap```, the page is allocated with the permissions rwx so it is easier to find.
 
@@ -108,7 +108,7 @@ virt addr              physical addr            size          perms        prese
 
 ```
 
-After pressing enter yet another time.
+After pressing enter yet another time:
 
 ```console
 pid: 146251
