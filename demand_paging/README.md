@@ -1,11 +1,15 @@
 # Demand Paging
 
 ## Intro
-I had read somewhere (some book or blog, I don't remember) that when a process calls [mmap(2)](https://www.man7.org/linux/man-pages/man2/mmap.2.html) to map an anonymous page, it does not actually allocate memory initially (it has no physical page associated with it).
+I had read that when a process calls [mmap(2)](https://www.man7.org/linux/man-pages/man2/mmap.2.html) to map an anonymous page, it does not actually allocate memory initially (it has no physical page associated with it).
 
-Rather, only the page table is updated (entries are created), and a corresponding physical page is allocated once the process tries to access an address within the memory region.
+When the kenrel handles *mmap(2)* it only updates the page table to reflect the virtual new address space. 
 
-The experiments here aim to demonstrate this visually.
+However, at this point there are no physical pages associated with the memory region created by *mmap*.
+
+Accessing an address within this region results in a page fault, and this is when the kernel allocates a physical page to it.
+
+The experiments here aim to demonstrate this by continuously monitoring the entries in */proc/[pid]/maps* and */proc/[pid]/pagemap*.
 
 The code can be built by running ```make```.
 
