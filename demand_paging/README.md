@@ -1,13 +1,15 @@
 # Demand Paging
 
 ## Intro
-I had read somewhere (some book or blog, I don't remember) that when a process calls [mmap(2)](https://www.man7.org/linux/man-pages/man2/mmap.2.html) to map anonymous pages, initially it does not actually allocate memory (it has not physical page associated with it).
+I had read somewhere (some book or blog, I don't remember) that when a process calls [mmap(2)](https://www.man7.org/linux/man-pages/man2/mmap.2.html) to map an anonymous page, it does not actually allocate memory initially (it has no physical page associated with it).
 
-Rather, only the page table is updated (entries are created), and only when the page is accessed a corresponding physical page is allocated. 
+Rather, only the page table is updated (entries are created), and a corresponding physical page is allocated once the process tries to access an address within the memory region.
 
 The experiments here aim to demonstrate this visually.
 
-The code can be built by running ```make```
+The code can be built by running ```make```.
+
+Warning: One of the programs **requires to be run as root**. 
 
 
 ## Experiment 1: Single Page
