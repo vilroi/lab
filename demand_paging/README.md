@@ -1,37 +1,34 @@
 # Demand Paging
 
 ## Intro
-I had read somewhere (some book or blog, I don't remember) that when a process calls [mmap(2)](https://www.man7.org/linux/man-pages/man2/mmap.2.html) to map anonymous pages, it does not actually allocate memory initially. 
+I had read somewhere (some book or blog, I don't remember) that when a process calls [mmap(2)](https://www.man7.org/linux/man-pages/man2/mmap.2.html) to map anonymous pages, initially it does not actually allocate memory (it has not physical page associated with it).
 
-Rather, only the page table is updated (entries are created), and only when the page is accessed is a corresponding physical page allocated. 
+Rather, only the page table is updated (entries are created), and only when the page is accessed a corresponding physical page is allocated. 
 
-The experiments here aim to demonstrate this.
+The experiments here aim to demonstrate this visually.
 
-This code is can be built by running ```make```
+The code can be built by running ```make```
 
-
-## Theory
-TODO
 
 ## Experiment 1: Single Page
 
 ```singlemap```  does the following:
 1. prints its own pid
-2.  allocates a single page with **mmap(2)**
+2. allocates a single page with *mmap(2)*
 3. accesses the allocated page
 
 After each step, it waits for the user to press enter before moving on.
 
-We can observe the steps by running ```singlemap```, and then running ```ptdump``` with the pid of the process in a differnt terminal.
+We can observe the steps by running ```singlemap```, and then running ```ptdump``` with the pid of the process.
 
 ```console
 $ ./singlemap
 pid: 146251
 ```
+In a different terminal (or split terminal), we run ptdump.
+At this point, *mmap(2)* has not been called yet.
 
 ```console
-# In a differnt terminal (or split terminal), we run ptdump.
-# Initially there are no pages allocated.
 $ watch -n 0.1 "sudo ./ptdump/ptdump 146251"
 
 Every 0.1s: sudo ./ptdump/ptdump 146251                                                                                                     cyberia: Sun Dec 17 18:21:31 2023
@@ -64,7 +61,7 @@ virt addr              physical addr            size          perms        prese
 
 As we progress the program by pressing enter in the terminal running ```singlemap```, the output of ```ptdump``` should change.
 
-In ```singlemap```, the page is allocated with rwx so it is easier to spot.
+In ```singlemap```, the page is allocated with the permissions rwx so it is easier to find.
 
 After pressing enter:
 
@@ -163,9 +160,10 @@ $ ./multimap
 $ watch -n 0.1 "sudo ./ptudmp/ptdump -g [pid] | awk '/virt|rwx/{print}'"
 ```
 
-We will be grep-ing for rwx, since the output of `-g` is very large. 
+We will be only matching for pages with rwx (and the banner), since the output of `-g` is very large. 
 
 A sample output after a few accesses are as follows:
+
 ```console
 pid: 219540
 
@@ -193,4 +191,3 @@ virt addr              physical addr            size          perms        prese
 0x7f03141a5000         0x318603000                4096        rwxp         true           false
 0x7f03141a6000         0x28664d000                4096        rwxp         true           false
 ```
-
