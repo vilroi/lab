@@ -25,8 +25,8 @@ main(void)
 		receive_packet(sockfd, &recvbuf);
 		craft_packet(&sendbuf, &recvbuf);
 		send_packet(sockfd, &sendbuf);
-
 	}
+
 	exit(EXIT_SUCCESS);
 }
 
