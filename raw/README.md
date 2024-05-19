@@ -5,3 +5,5 @@ Fooling around with raw sockets ([raw(7)](https://www.man7.org/linux/man-pages/m
 - icmp: First attempt to send and receive icmp messages. hacky, incomplete.
 
 - icmp_echo_server: The rewrite of the above. Cleaner, and actually works.
+
+- go_raw: Raw sockets with go. Listens for, ARP messages, parses it, and dumps it to stdout.
