@@ -34,7 +34,6 @@ func main() {
 
 	fmt.Printf("%#x\n", moduledata.types)
 	fmt.Println(moduledata.modulename)
-
 }
 
 func extractModuleData(e *elf.File) moduledata {
@@ -90,7 +89,6 @@ func getLoadAddr(file *elf.File) (uint64, error) {
 	}
 
 	return 0, ElfUnexpectedError
-	// should not reach here
 }
 
 func searchSymbolByName(elf *elf.File, symbol string) (uint64, error) {
