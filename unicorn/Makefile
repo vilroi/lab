@@ -3,10 +3,12 @@ ARM_AS=$(ARM_TOOLCHAIN_PREFIX)-as
 ARM_LD=$(ARM_TOOLCHAIN_PREFIX)-ld
 ARM_OBJCPY=$(ARM_TOOLCHAIN_PREFIX)-objcopy
 
+CFLAGS=-Wall -Wpedantic
+
 all: unicorn thumb.bin
 
 unicorn: unicorn.c 
-	$(CC) unicorn.c -o unicorn -lunicorn
+	$(CC) $(CFLAGS) unicorn.c -o unicorn -lunicorn -lcapstone
 
 thumb.bin: thumb
 	$(ARM_OBJCPY) -O binary thumb thumb.bin

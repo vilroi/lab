@@ -7,17 +7,26 @@
 #include <fcntl.h>
 
 #include <unicorn/unicorn.h>
+#include <capstone/capstone.h>
 
 #define LOAD_ADDRESS		0x10000
 #define MEMORY_SIZE			(2 * 1024 * 1024)
+
+typedef struct disasm {
+	cs_insn		*insp;
+	size_t		count;
+} disasm_t;
 
 extern char *__progname;
 
 void usage(void);
 void error(char *,...);
 size_t read_all(char *, uint8_t **);
+void disasm_hook(uc_engine *, uint64_t, uint32_t, void *);
+
 void emulate(uint8_t *, size_t);
-void hook_code(uc_engine *, uint64_t, uint32_t, void *);
+disasm_t disassemble(uint8_t *, size_t);
+void disasm_close(disasm_t);
 
 int
 main(int argc, char *argv[])
@@ -30,7 +39,7 @@ main(int argc, char *argv[])
 
 	nread = read_all(argv[1], &insbuf);
 	emulate(insbuf, nread);
-
+	
 	exit(EXIT_SUCCESS);
 }
 
@@ -41,6 +50,9 @@ emulate(uint8_t *insbuf, size_t len)
 	uc_err		err;
 	size_t		sp = 0x1234;
 	uc_hook		trace;
+	disasm_t	disasm;
+
+	disasm = disassemble(insbuf, len);
 
 	err = uc_open(UC_ARCH_ARM, UC_MODE_THUMB, &uc);
 	if (err) 
@@ -52,18 +64,53 @@ emulate(uint8_t *insbuf, size_t len)
 
 	uc_reg_write(uc, UC_ARM_REG_SP, &sp);
 
-	uc_hook_add(uc, &trace, UC_HOOK_CODE, hook_code, NULL, LOAD_ADDRESS, LOAD_ADDRESS + len - 1);
+	uc_hook_add(uc, &trace, UC_HOOK_CODE, (void *) disasm_hook, disasm.insp, LOAD_ADDRESS, LOAD_ADDRESS + len - 1);
 
 	err = uc_emu_start(uc, LOAD_ADDRESS | 1, LOAD_ADDRESS + len, 0, 0);
 	if (err)
 		error("uc_emu_start failed: %u (%s)\n", err, uc_strerror(err));
+
+	disasm_close(disasm);
+}
+
+
+disasm_t
+disassemble(uint8_t *insbuf, size_t len)
+{
+	csh 		handle;
+	cs_err		err;
+	disasm_t	disasm;
+
+	if ((err = cs_open(CS_ARCH_ARM, CS_MODE_THUMB, &handle)) != CS_ERR_OK)
+		error("cs_open() failed with: %s", cs_strerror(err));
+
+	// insp is allocated on the heap
+	disasm.count = cs_disasm(handle, insbuf, len, LOAD_ADDRESS, 0, &disasm.insp);
+
+	cs_close(&handle);
+
+	return disasm;
 }
 
 void 
-hook_code(uc_engine *uc, uint64_t addr, uint32_t size, void *user_data)
+disasm_hook(uc_engine *uc, uint64_t addr, uint32_t size, void *user_data)
 {
-	printf(">>> Tracing instruction at 0x%" PRIx64 ", instruction size = 0x%x\n",
-			addr, size);
+	int			index;
+	cs_insn		*insp;
+
+	// TODO: What if the instruction size is mixed?
+	index = (addr - LOAD_ADDRESS) / 2;
+	insp = (cs_insn *) user_data;
+
+	printf(">>> %#lx: %s\t%s\n", addr, 
+			insp[index].mnemonic, insp[index].op_str);
+
+}
+
+void 
+disasm_close(disasm_t disasm)
+{
+	cs_free(disasm.insp, disasm.count);
 }
 
 size_t
