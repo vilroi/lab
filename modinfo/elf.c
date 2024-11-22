@@ -27,6 +27,7 @@ open_elf(char *path)
 	if (fstat(fd, &statbuf) == -1)
 		err(1, "fstat failed");
 
+	elf->len = statbuf.st_size;
 	elf->rawp = mmap(NULL, statbuf.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
 	if ((void *) elf->rawp == MAP_FAILED)
 		err(1, "mmap failed");
@@ -46,6 +47,9 @@ close_elf(elf_t *elf)
 {
 	if (elf == NULL)
 		return;
+
+	if (munmap(elf->rawp, elf->len) == -1)
+		err(1, "munmap failed");
 
 	free(elf);
 }

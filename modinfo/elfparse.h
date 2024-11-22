@@ -9,6 +9,7 @@
 
 typedef struct elf {
 	uint8_t		*rawp;
+	size_t		len;
 	ElfW(Ehdr)	*ehdr;
 	ElfW(Shdr)	*shdr;
 	char		*shstrp;

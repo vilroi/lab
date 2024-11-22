@@ -1,4 +1,5 @@
 OBJFILES=modinfo.o elf.o
+CFLAGS=-g -Wall -Wpedantic
 
 all: modinfo
 
@@ -6,10 +7,10 @@ modinfo: $(OBJFILES)
 	$(CC) $(OBJFILES) -o modinfo
 
 modinfo.o: modinfo.c
-	$(CC) -c modinfo.c
+	$(CC) $(CFLAGS) -c modinfo.c
 
 elf.o: elf.c
-	$(CC) -c elf.c
+	$(CC) $(CFLAGS) -c elf.c
 
 clean:
 	rm *.o
